@@ -5,8 +5,7 @@ from pathlib import Path
 from sqlalchemy import create_mock_engine
 from sqlalchemy.orm import DeclarativeBase
 import typer
-from typing import Type
-
+import sys
 
 class ModelsNotFoundError(Exception):
     message = 'Found no sqlalchemy models in the directory tree.'
@@ -24,13 +23,14 @@ def get_declarative_base(models_dir: Path, root_dir: Path) -> type[DeclarativeBa
     Walk the directory tree starting at the root, import all models, and return 1 of them, as they all keep a refernce to the Metadata object.
     The way sqlalchemy works, you must import all classes in order for them to be registered in Metadata.
     '''
+    sys.path.append(str(root_dir))
     models: set[type[DeclarativeBase]] = set()
     for root, _, _ in os.walk(models_dir):
         python_file_paths = Path(root).glob('*.py')
         for file_path in python_file_paths:
             import_path = get_import_path_from_path(file_path, root_dir)
             try:
-                module = importlib.import_module(import_path, str(root_dir))
+                module = importlib.import_module(import_path)
             except:
                 # TODO: handle nicer
                 continue
