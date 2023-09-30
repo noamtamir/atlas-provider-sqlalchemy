@@ -23,7 +23,10 @@ def get_declarative_base(models_dir: Path, root_dir: Path) -> type[DeclarativeBa
     Walk the directory tree starting at the root, import all models, and return 1 of them, as they all keep a refernce to the Metadata object.
     The way sqlalchemy works, you must import all classes in order for them to be registered in Metadata.
     '''
-    sys.path.append(str(root_dir))
+    root_abs_path = os.path.abspath(str(root_dir))
+    if root_abs_path not in sys.path:
+        sys.path.append(root_abs_path)
+
     models: set[type[DeclarativeBase]] = set()
     for root, _, _ in os.walk(models_dir):
         python_file_paths = Path(root).glob('*.py')
