@@ -30,7 +30,7 @@ def get_declarative_base(models_dir: Path, root_dir: Path) -> type[DeclarativeBa
         for file_path in python_file_paths:
             import_path = get_import_path_from_path(file_path, root_dir)
             try:
-                module = importlib.import_module(import_path)
+                module = importlib.import_module(import_path, str(root_dir))
             except:
                 # TODO: handle nicer
                 continue
