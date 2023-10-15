@@ -1,16 +1,15 @@
+# DRAFT
+
 # atlas-provider-sqlalchemy
 Atlas provider for sqlalchemy
 
 ## Run
 From the root directory of your project run:
 ```shell
-pipx run --spec git+https://github.com/noamtamir/atlas-provider-sqlalchemy.git atlas-provider-sqlalchemy --dialect db-dialect
+pipx run --spec git+https://github.com/noamtamir/atlas-provider-sqlalchemy.git atlas-provider-sqlalchemy --dialect dialect
 ```
-Optionally add  `--path path/to/models` and/or `--root-dir path/to/root-directory` if you need to run it from a different directory. All paths are relative to the directory this is run in.
-
-...
-
-draft
+`dialect: postgresql|mysql|oracle|sqlite|mssql` (or any other dialect supported by sqlalchemy)    
+Optionally add  `--path path/to/models` if you need to run it from a different directory. All paths are relative to the directory this is run in.
 
 # atlas-provider-sqlalchemy
 
@@ -37,66 +36,53 @@ pipx install git+https://github.com/noamtamir/atlas-provider-sqlalchemy.git
 
 #### Standalone 
 
-If all of your Sequelize models exist in a single Node module, 
-you can use the provider directly to load your Sequelize schema into Atlas.
+If all of your SQLAlchemy models exist in a single package, 
+you can use the provider directly to load your SQLAlchemy schema into Atlas.
 
 In your project directory, create a new file named `atlas.hcl` with the following contents:
 
 ```hcl
-data "external_schema" "sequelize" {
+data "external_schema" "sqlalchemy" {
   program = [
-    "npx",
-    "@ariga/atlas-provider-sequelize",
-    "load",
-    "--path", "./path/to/models",
-    "--dialect", "mysql", // mariadb | postgres | sqlite | mssql
+    "atlas-provider-sqlalchemy",
+    "--dialect", "mysql", // mysql | mariadb | postgresql | sqlite | mssql
   ]
 }
 
-env "sequelize" {
-  src = data.external_schema.sequelize.url
+env "sqlalchemy" {
+  src = data.external_schema.sqlalchemy.url
   dev = "docker://mysql/8/dev"
-  migration {
-    dir = "file://migrations"
-  }
-  format {
-    migrate {
-      diff = "{{ sql . \"  \" }}"
-    }
-  }
 }
 ```
 
-#### As JS Script 
+#### As Python Script 
+...   
+If you want to use the provider as a python script, you can use the provider as follows:
 
-If you want to use the provider as JS script, you can use the provider as follows:
+Create a new file named `load.py` with the following contents:
 
-Create a new file named `load.js` with the following contents:
+```python
+# import all models
+from models import User, Task;
+...
+const load_models = require("@ariga/atlas-provider-sequelize");
 
-```js
-#!/usr/bin/env node
-
-// require sequelize models you want to load
-const user = require("./models/user");
-const task = require("./models/task");
-const loadModels = require("@ariga/atlas-provider-sequelize");
-
-console.log(loadModels("mysql", user, task));
+print(load_models("mysql", [User, Task]));
 ```
 
 Next, in your project directory, create a new file named `atlas.hcl` with the following contents:
 
 ```hcl
-data "external_schema" "sequelize" {
+data "external_schema" "sqlalchemy" {
     program = [
-        "node",
-        "load.js",
+        "python",
+        "load.py",
         "mysql"
     ]
 }
 
-env "sequelize" {
-    src = data.external_schema.sequelize.url
+env "sqlalchemy" {
+    src = data.external_schema.sqlalchemy.url
     dev = "docker://mysql/8/dev"
     migration {
         dir = "file://migrations"
@@ -111,13 +97,13 @@ env "sequelize" {
 
 ### Usage
 
-Once you have the provider installed, you can use it to apply your Sequelize schema to the database:
+Once you have the provider installed, you can use it to apply your SQLAlchemy schema to the database:
 
 #### Apply
 
 You can use the `atlas schema apply` command to plan and apply a migration of your database to
-your current Sequelize schema. This works by inspecting the target database and comparing it to the
-Sequelize schema and creating a migration plan. Atlas will prompt you to confirm the migration plan
+your current SQLAlchemy schema. This works by inspecting the target database and comparing it to the
+SQLAlchemy schema and creating a migration plan. Atlas will prompt you to confirm the migration plan
 before applying it to the database.
 
 ```bash

@@ -23,21 +23,17 @@ class ModelsNotFoundError(Exception):
     pass
 
 
-def run(dialect: str, modles_dir: str = '', root_dir: str = '', debug: bool = False) -> type[DeclarativeBase]:
+def run(dialect: str, modles_dir: str = '', debug: bool = False) -> type[DeclarativeBase]:
     models_dir = Path(modles_dir) or Path(os.getcwd())
-    root_path = Path(root_dir) or Path(os.getcwd())
-    Base = get_declarative_base(models_dir, root_path, debug)
+    Base = get_declarative_base(models_dir, debug)
     return dump_ddl(dialect, Base)
 
 
-def get_declarative_base(models_dir: Path, root_dir: Path, debug: bool = False) -> type[DeclarativeBase]:
+def get_declarative_base(models_dir: Path, debug: bool = False) -> type[DeclarativeBase]:
     '''
     Walk the directory tree starting at the root, import all models, and return 1 of them, as they all keep a refernce to the Metadata object.
     The way sqlalchemy works, you must import all classes in order for them to be registered in Metadata.
     '''
-    root_abs_path = os.path.abspath(str(root_dir))
-    if root_abs_path not in sys.path:
-        sys.path.append(root_abs_path)
 
     models: set[type[DeclarativeBase]] = set()
     for root, _, _ in os.walk(models_dir):
@@ -98,8 +94,8 @@ app = typer.Typer(no_args_is_help=True)
 
 
 @app.command()
-def load(dialect: str = typer.Option(default=...), path: str = '', root_dir: str = '', debug: bool = False):
-    run(dialect, path, root_dir, debug)
+def load(dialect: str = typer.Option(default=...), path: str = '', debug: bool = False):
+    run(dialect, path, debug)
 
 
 if __name__ == "__main__":
