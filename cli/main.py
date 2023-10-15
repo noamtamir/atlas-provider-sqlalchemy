@@ -1,11 +1,11 @@
 import os
 import importlib.util
 import inspect
+import typer
 from pathlib import Path
 from sqlalchemy import create_mock_engine
 from sqlalchemy.orm import DeclarativeBase
-import typer
-import sys
+from typing import Type, Set
 
 
 COMMON_VENV_NAMES = [
@@ -23,19 +23,19 @@ class ModelsNotFoundError(Exception):
     pass
 
 
-def run(dialect: str, modles_dir: str = '', debug: bool = False) -> type[DeclarativeBase]:
+def run(dialect: str, modles_dir: str = '', debug: bool = False) -> Type[DeclarativeBase]:
     models_dir = Path(modles_dir) or Path(os.getcwd())
     Base = get_declarative_base(models_dir, debug)
     return dump_ddl(dialect, Base)
 
 
-def get_declarative_base(models_dir: Path, debug: bool = False) -> type[DeclarativeBase]:
+def get_declarative_base(models_dir: Path, debug: bool = False) -> Type[DeclarativeBase]:
     '''
     Walk the directory tree starting at the root, import all models, and return 1 of them, as they all keep a refernce to the Metadata object.
     The way sqlalchemy works, you must import all classes in order for them to be registered in Metadata.
     '''
 
-    models: set[type[DeclarativeBase]] = set()
+    models: Set[Type[DeclarativeBase]] = set()
     for root, _, _ in os.walk(models_dir):
         python_file_paths = Path(root).glob('*.py')
         for file_path in python_file_paths:
@@ -64,7 +64,7 @@ def get_declarative_base(models_dir: Path, debug: bool = False) -> type[Declarat
     return model
 
 
-def dump_ddl(dialect_driver: str, Base: type[DeclarativeBase]) -> type[DeclarativeBase]:
+def dump_ddl(dialect_driver: str, Base: Type[DeclarativeBase]) -> Type[DeclarativeBase]:
     '''
     Creates a mock engine and dumps its DDL to stdout
     '''
