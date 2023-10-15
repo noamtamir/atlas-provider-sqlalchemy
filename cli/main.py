@@ -20,7 +20,7 @@ COMMON_VENV_NAMES = [
 
 
 class ModelsNotFoundError(Exception):
-    message = 'Found no sqlalchemy models in the directory tree.'
+    pass
 
 
 def run(dialect: str, modles_dir: str = '', root_dir: str = '', debug: bool = False) -> type[DeclarativeBase]:
@@ -63,7 +63,8 @@ def get_declarative_base(models_dir: Path, root_dir: Path, debug: bool = False) 
     try:
         model = models.pop()
     except KeyError as e:
-        raise ModelsNotFoundError()
+        raise ModelsNotFoundError(
+            'Found no sqlalchemy models in the directory tree.')
     return model
 
 
@@ -72,7 +73,7 @@ def dump_ddl(dialect_driver: str, Base: type[DeclarativeBase]) -> type[Declarati
     Creates a mock engine and dumps its DDL to stdout
     '''
     def dump(sql, *multiparams, **params):
-        print(sql.compile(dialect=engine.dialect))
+        print(str(sql.compile(dialect=engine.dialect)).replace('\t', '').replace('\n', ''), end=';')
 
     engine = create_mock_engine(f'{dialect_driver}://', dump)
     Base.metadata.create_all(engine, checkfirst=False)

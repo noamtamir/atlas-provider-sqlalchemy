@@ -44,7 +44,7 @@ def test_get_declarative_base_explicit_path():
 def test_get_declarative_base_explicit_path_fail():
     root_dir = os.getcwd()
     models_dir = os.getcwd() + '/nothing/here'
-    with pytest.raises(ModelsNotFoundError):
+    with pytest.raises(ModelsNotFoundError, match='Found no sqlalchemy models in the directory tree.'):
         Base = get_declarative_base(models_dir, root_dir)
         Base.metadata.clear()
 
