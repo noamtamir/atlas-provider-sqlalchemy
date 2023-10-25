@@ -53,7 +53,7 @@ Create a new file named `load_models.py` with the following contents:
 ```python
 # import all models
 from models import User, Task;
-from ariga_provider_sqlalchemy import print_ddl
+from atlas_provider_sqlalchemy import print_ddl
 print_ddl("mysql", [User, Task])
 ```
 
