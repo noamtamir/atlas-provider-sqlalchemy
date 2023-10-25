@@ -5,7 +5,7 @@ import typer
 from pathlib import Path
 from sqlalchemy import create_mock_engine
 from sqlalchemy.orm import DeclarativeBase
-from typing import Type, Set
+from typing import Type, Set, List
 
 
 COMMON_VENV_NAMES = [
@@ -97,6 +97,9 @@ app = typer.Typer(no_args_is_help=True)
 def load(dialect: str = typer.Option(default=...), path: str = '', debug: bool = False):
     run(dialect, path, debug)
 
+
+def print_ddl(dialect_driver: str, models: List[Type[DeclarativeBase]]):
+    dump_ddl(dialect_driver=dialect_driver, Base=models[0])
 
 if __name__ == "__main__":
     app(prog_name='atlas-provider-sqlalchemy')

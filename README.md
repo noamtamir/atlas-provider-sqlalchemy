@@ -3,16 +3,6 @@
 # atlas-provider-sqlalchemy
 Atlas provider for sqlalchemy
 
-## Run
-From the root directory of your project run:
-```shell
-pipx run --spec git+https://github.com/noamtamir/atlas-provider-sqlalchemy.git atlas-provider-sqlalchemy --dialect dialect
-```
-`dialect: postgresql|mysql|oracle|sqlite|mssql` (or any other dialect supported by sqlalchemy)    
-Optionally add  `--path path/to/models` if you need to run it from a different directory. All paths are relative to the directory this is run in.
-
-# atlas-provider-sqlalchemy
-
 Load [SQLAlchemy](https://www.sqlalchemy.org/) models into an [Atlas](https://atlasgo.io) project.
 
 ### Use-cases
@@ -29,9 +19,8 @@ See [atlasgo.io](https://atlasgo.io/getting-started#installation) for more insta
 
 Install the provider by running:
 ```bash
-pipx install git+https://github.com/noamtamir/atlas-provider-sqlalchemy.git
+pip install atlas-provider-sqlalchemy
 ```
-([Pipx documentation](https://pypa.github.io/pipx/) )
 
 
 #### Standalone 
@@ -45,7 +34,7 @@ In your project directory, create a new file named `atlas.hcl` with the followin
 data "external_schema" "sqlalchemy" {
   program = [
     "atlas-provider-sqlalchemy",
-    "--dialect", "mysql", // mysql | mariadb | postgresql | sqlite | mssql
+    "--dialect", "mysql", // postgresql | mysql | oracle | sqlite | mssql
   ]
 }
 
@@ -59,15 +48,13 @@ env "sqlalchemy" {
 ...   
 If you want to use the provider as a python script, you can use the provider as follows:
 
-Create a new file named `load.py` with the following contents:
+Create a new file named `load_models.py` with the following contents:
 
 ```python
 # import all models
 from models import User, Task;
-...
-const load_models = require("@ariga/atlas-provider-sequelize");
-
-print(load_models("mysql", [User, Task]));
+from ariga_provider_sqlalchemy import print_ddl
+print_ddl("mysql", [User, Task])
 ```
 
 Next, in your project directory, create a new file named `atlas.hcl` with the following contents:
@@ -76,22 +63,13 @@ Next, in your project directory, create a new file named `atlas.hcl` with the fo
 data "external_schema" "sqlalchemy" {
     program = [
         "python",
-        "load.py",
-        "mysql"
+        "load_models.py"
     ]
 }
 
 env "sqlalchemy" {
     src = data.external_schema.sqlalchemy.url
     dev = "docker://mysql/8/dev"
-    migration {
-        dir = "file://migrations"
-    }
-    format {
-        migrate {
-            diff = "{{ sql . \"  \" }}"
-        }
-    }
 }
 ```
 
@@ -101,13 +79,10 @@ Once you have the provider installed, you can use it to apply your SQLAlchemy sc
 
 #### Apply
 
-You can use the `atlas schema apply` command to plan and apply a migration of your database to
-your current SQLAlchemy schema. This works by inspecting the target database and comparing it to the
-SQLAlchemy schema and creating a migration plan. Atlas will prompt you to confirm the migration plan
-before applying it to the database.
+You can use the `atlas schema apply` command to plan and apply a migration of your database to your current SQLAlchemy schema. This works by inspecting the target database and comparing it to the SQLAlchemy schema and creating a migration plan. Atlas will prompt you to confirm the migration plan before applying it to the database.
 
 ```bash
-atlas schema apply --env sequelize -u "mysql://root:password@localhost:3306/mydb"
+atlas schema apply --env sqlalchemy -u "mysql://root:password@localhost:3306/mydb"
 ```
 Where the `-u` flag accepts the [URL](https://atlasgo.io/concepts/url) to the
 target database.
@@ -120,11 +95,8 @@ workflow, where each change to the database is versioned and recorded in a migra
 from its latest revision to the current Sequelize schema.
 
 ```bash
-atlas migrate diff --env sequelize 
+atlas migrate diff --env sqlalchemy 
 ````
-
-### Typescript
-for typescript support, see the [ts-atlas-provider-sequelize](https://github.com/ariga/atlas-provider-sequelize/tree/master/ts) README.
 
 ### Supported Databases
 
@@ -134,6 +106,7 @@ The provider supports the following databases:
 * PostgreSQL
 * SQLite
 * Microsoft SQL Server
+* Oracle
 
 ### Issues
 
